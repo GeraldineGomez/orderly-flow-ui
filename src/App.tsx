@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Layout } from "./components/layout/Layout";
 import { Login } from "./pages/Login";
 import { MyOrders } from "./pages/MyOrders";
@@ -46,20 +47,16 @@ const App = () => {
 
   const handleLogin = async (username: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch('http://user-management-env.eba-s3kmfixi.us-east-1.elasticbeanstalk.com/user-management/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'accept' : 'application/json'
-        },
-        body: JSON.stringify({
-          username,
-          password,
-        }),
+      const { data, error } = await supabase.functions.invoke('login-api', {
+        body: { username, password }
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      if (error) {
+        console.error('Login error:', error);
+        return false;
+      }
+
+      if (data) {
         const token = data.token || data.bearerToken || data.access_token;
         
         if (token) {
