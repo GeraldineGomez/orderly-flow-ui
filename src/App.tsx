@@ -45,25 +45,40 @@ const App = () => {
   }, []);
 
   const handleLogin = async (username: string, password: string): Promise<boolean> => {
-    // Simulate authentication
-    if (username === 'admin' && password === 'admin') {
-      const userData = { username: 'admin', role: 'ADMIN' as const };
-      const token = 'mock-bearer-token-admin';
+    try {
+      const response = await fetch('http://user-management-env.eba-s3kmfixi.us-east-1.elasticbeanstalk.com/user-management/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username,
+          password,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const token = data.token || data.bearerToken || data.access_token;
+        
+        if (token) {
+          const userData = { 
+            username, 
+            role: data.role || 'USER' as const 
+          };
+          
+          sessionStorage.setItem('bearerToken', token);
+          sessionStorage.setItem('userData', JSON.stringify(userData));
+          setUser({ ...userData, token });
+          return true;
+        }
+      }
       
-      sessionStorage.setItem('bearerToken', token);
-      sessionStorage.setItem('userData', JSON.stringify(userData));
-      setUser({ ...userData, token });
-      return true;
-    } else if (username === 'user' && password === 'user') {
-      const userData = { username: 'user', role: 'USER' as const };
-      const token = 'mock-bearer-token-user';
-      
-      sessionStorage.setItem('bearerToken', token);
-      sessionStorage.setItem('userData', JSON.stringify(userData));
-      setUser({ ...userData, token });
-      return true;
+      return false;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
     }
-    return false;
   };
 
   const handleLogout = () => {
