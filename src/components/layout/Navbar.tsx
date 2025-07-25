@@ -55,10 +55,9 @@ export const Navbar = ({ user, onLogout }: NavbarProps) => {
             Welcome, {user.username}
           </span>
           <Button 
-            variant="outline" 
+            variant="destructive" 
             size="sm" 
             onClick={onLogout}
-            className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary"
           >
             Logout
           </Button>
